@@ -86,15 +86,15 @@ background:repeating-linear-gradient(to bottom,#2c3140 0 1px,transparent 1px 19p
 .wk.zl{background:linear-gradient(#cfd9f5,#8b9fd3)}.bk.zl{background:linear-gradient(#34406a,#0c1020)}
 .wk.root{background:linear-gradient(#ffd0a0,#ff7a1a)}.bk.root{background:linear-gradient(#ff9a3a,#a84a00);color:#fff}
 
-html{scroll-snap-type:y proximity;scroll-padding-top:44px}
+html{scroll-snap-type:y proximity;scroll-padding-top:52px}
 body{display:block;padding:0}
 .synth{max-width:none;width:100%;border-radius:0;padding:0 30px}
 .wood{position:fixed;z-index:5}.wood.l{left:0;border-radius:0}.wood.r{right:0;border-radius:0}
-#nav{position:sticky;top:0;z-index:10;display:flex;gap:6px;justify-content:center;padding:6px;background:rgba(6,7,11,.88);backdrop-filter:blur(6px)}
+#nav{position:sticky;top:0;z-index:10;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;min-height:52px;padding:6px;background:rgba(6,7,11,.88);backdrop-filter:blur(6px)}
 #nav button{background:#0c0e14;border:1px solid var(--line);color:var(--dim);border-radius:6px;padding:5px 14px;font:inherit;font-size:13px;cursor:pointer}
 #nav button.on{color:#fff;border-color:var(--blue);box-shadow:0 0 10px #2aa8ff66}
-.pg{min-height:calc(100dvh - 44px);scroll-snap-align:start;padding:8px 0;display:flex;flex-direction:column;gap:8px}
-@media(min-width:821px){#p1{height:calc(100dvh - 44px)}}
+.pg{min-height:calc(100dvh - 52px);scroll-snap-align:start;padding:8px 0;display:flex;flex-direction:column;gap:8px}
+@media(min-width:821px){#p1{height:calc(100dvh - 52px)}}
 #p1 .top{flex:1;min-height:0}#p1 .col{min-height:0;overflow:auto}#p1 .screen{min-height:0}
 #p1 .fx{margin:0}.fader{height:clamp(120px,21vh,190px)}.sel{margin:0}
 #p2 .sq{flex:1;display:flex;flex-direction:column;margin:0}
@@ -120,25 +120,24 @@ body{display:block;padding:0}
 #lpl{display:grid;grid-template-rows:repeat(15,minmax(28px,1fr))}#lpl>div{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);font-size:12px;color:var(--dim)}
 #lpl>div.mu{opacity:.5}#lpl b{color:var(--txt);width:16px}#lpl span{flex:1}#lpl button{padding:2px 8px;font-size:12px}
 #p4 .lp{flex:1;display:flex;flex-direction:column}.lpw{position:relative}#lpc{position:absolute;inset:0;width:100%;height:100%}#lpl select{padding:2px 4px;font-size:12px;max-width:140px}
-@media(min-width:821px){#p4{height:calc(100dvh - 44px)}}.mod.dis{opacity:.4}
-.tp{position:absolute;left:0;right:0;bottom:16px;display:flex;justify-content:center;gap:24px;z-index:3;pointer-events:none}
-#hint{bottom:130px}
-.big{pointer-events:auto;width:clamp(64px,10vh,96px);height:clamp(64px,10vh,96px);border-radius:50%;cursor:pointer;display:grid;place-items:center;padding:0;border:2px solid rgba(255,255,255,.2);backdrop-filter:blur(6px);background:rgba(10,12,20,.55);transition:transform .12s,box-shadow .2s,background .2s}
-.big svg{width:44%;height:44%;fill:currentColor}
-.big.play{color:#2bdc6b;box-shadow:0 0 22px #2bdc6b55,inset 0 0 18px #2bdc6b22}
-.big.stop{color:#ff4a5a;box-shadow:0 0 22px #ff4a5a44,inset 0 0 18px #ff4a5a22}
-.big:hover{transform:scale(1.07)}.big:active{transform:scale(.94)}.big:focus-visible{outline:3px solid #fff;outline-offset:3px}
-body.playing .big.play{background:#2bdc6b;color:#04120a;box-shadow:0 0 36px #2bdc6b;animation:bp 1.2s ease-in-out infinite}
-body:not(.playing) .big.stop{opacity:.5}
-@keyframes bp{50%{box-shadow:0 0 56px #2bdc6b}}
-@media(prefers-reduced-motion:reduce){.big{animation:none!important}}
+@media(min-width:821px){#p4{height:calc(100dvh - 52px)}}.mod.dis{opacity:.4}
+#nav .ntp{display:flex;gap:8px;margin-right:14px;padding-right:14px;border-right:1px solid var(--line)}
+#nav .big{display:flex;align-items:center;gap:8px;height:38px;padding:0 18px 0 14px;border-radius:19px;border:0;cursor:pointer;font:600 14px 'Exo 2',system-ui,sans-serif;color:#fff;transition:transform .12s,box-shadow .2s,opacity .2s,filter .2s}
+#nav .big svg{width:16px;height:16px;fill:currentColor}
+#nav .big.play{background:linear-gradient(#34e47a,#11a04c);color:#04140a;box-shadow:0 0 14px #2bdc6b66}
+#nav .big.stop{background:linear-gradient(#ff6070,#cc2638);box-shadow:0 0 14px #ff4a5a55}
+#nav .big:hover{transform:translateY(-1px);filter:brightness(1.1)}#nav .big:active{transform:scale(.96)}#nav .big:focus-visible{outline:3px solid #fff;outline-offset:2px}
+body.playing #nav .big.play{box-shadow:0 0 26px #2bdc6b;animation:bp 1.2s ease-in-out infinite}
+body:not(.playing) #nav .big.stop{opacity:.45;filter:saturate(.6)}
+@keyframes bp{50%{box-shadow:0 0 38px #2bdc6b}}
+@media(prefers-reduced-motion:reduce){#nav .big{animation:none!important}}
 </style>
 </head>
 <body>
-<nav id="nav"><button data-p="p1" class="on">Som e efeitos</button><button data-p="p2">Sequenciador</button><button data-p="p3">Teclado APC</button><button data-p="p4">Loop</button><button id="fsa" title="Tela cheia">⛶</button></nav>
+<nav id="nav"><div class="ntp"><button id="bplay" class="big play" aria-label="Tocar" title="Tocar (Espaço)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Tocar</button><button id="bstop" class="big stop" aria-label="Parar" title="Parar (Espaço)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Parar</button></div><button data-p="p1" class="on">Som e efeitos</button><button data-p="p2">Sequenciador</button><button data-p="p3">Teclado APC</button><button data-p="p4">Loop</button><button id="fsa" title="Tela cheia">⛶</button></nav>
 <main class="synth"><div class="wood l"></div><div class="wood r"></div>
 <div class="pg" id="p1"><div class="sel" id="sel"></div><section class="top"><div class="col" id="cl"></div>
-<div class="screen"><canvas id="cv"></canvas><div class="ovl"><button class="pp">▶ Tocar</button><button id="fs">⛶ Tela cheia</button></div><div class="tp"><button id="bplay" class="big play" aria-label="Tocar" title="Tocar (Espaço)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg></button><button id="bstop" class="big stop" aria-label="Parar" title="Parar (Espaço)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button></div><p id="hint">Use o menu no topo para ir ao sequenciador ou ao teclado. Espaço toca e para. Teclas: fileira Z–M (graves) e Q–I (agudos)</p></div>
+<div class="screen"><canvas id="cv"></canvas><div class="ovl"><button class="pp">▶ Tocar</button><button id="fs">⛶ Tela cheia</button></div><p id="hint">Use o menu no topo para ir ao sequenciador ou ao teclado. Espaço toca e para. Teclas: fileira Z–M (graves) e Q–I (agudos)</p></div>
 <div class="col" id="cr"></div></section><section class="fx"><h2>Mix de efeitos</h2><div class="faders" id="fx"></div></section></div>
 <div class="pg" id="p2"><section class="sq" id="sq"></section></div>
 <div class="pg" id="p3"><div class="sp" id="sp"></div><details class="cal"><summary>Calibrar o tamanho real</summary><p>Encoste um cartão de crédito na tela e ajuste até o retângulo ficar do mesmo tamanho (85,6 × 54 mm).</p><div class="calrow"><div id="card"></div><input type="range" id="cs" min="2" max="8" step=".01" value="3.78" aria-label="Escala"><output id="calv"></output></div></details><div class="apcwrap" id="aw"><div class="apc" id="apc"><div id="keys"></div></div></div><p class="cap">APC Key 25 mk II em tamanho real (315 × 193 mm). Desenho aproximado do painel; as 25 teclas são as mesmas do seu controlador.</p></div>
