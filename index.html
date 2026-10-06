@@ -113,22 +113,30 @@ body{display:block;padding:0}
 .br{color:#c7cdda;font-size:calc(3*var(--mm));line-height:1.3}.br small{font-size:calc(2.2*var(--mm));color:var(--dim)}
 .cap{margin:0;text-align:center;font-size:12px;color:var(--dim)}
 .tr.mute .st.a{opacity:.3;box-shadow:none}.tc select{max-width:96px}
+.lp button,.lp select{background:#0c0e14;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.lp button:disabled{opacity:.35;cursor:default}.lp #lrec{border-color:#ff3c50;color:#fff}.lp button.on{background:#3a1d1d;border-color:#ff5a5a}
+.lp label{display:flex;gap:6px;align-items:center}.lp #lps{margin-left:auto;color:#ff7a1a;font-size:14px}
+.lpg{display:grid;grid-template-columns:200px 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#lpl>div{height:34px;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);font-size:12px;color:var(--dim)}
+#lpl>div.mu{opacity:.5}#lpl b{color:var(--txt);width:16px}#lpl span{flex:1}#lpl button{padding:2px 8px;font-size:12px}
+#lpc{width:100%;height:340px;display:block}.mod.dis{opacity:.4}
 </style>
 </head>
 <body>
-<nav id="nav"><button data-p="p1" class="on">Som e efeitos</button><button data-p="p2">Sequenciador</button><button data-p="p3">Teclado APC</button><button id="fsa" title="Tela cheia">⛶</button></nav>
+<nav id="nav"><button data-p="p1" class="on">Som e efeitos</button><button data-p="p2">Sequenciador</button><button data-p="p3">Teclado APC</button><button data-p="p4">Loop</button><button id="fsa" title="Tela cheia">⛶</button></nav>
 <main class="synth"><div class="wood l"></div><div class="wood r"></div>
 <div class="pg" id="p1"><div class="sel" id="sel"></div><section class="top"><div class="col" id="cl"></div>
 <div class="screen"><canvas id="cv"></canvas><div class="ovl"><button class="pp">▶ Tocar</button><button id="fs">⛶ Tela cheia</button></div><p id="hint">Use o menu no topo para ir ao sequenciador ou ao teclado. Espaço toca e para. Teclas: fileira Z–M (graves) e Q–I (agudos)</p></div>
 <div class="col" id="cr"></div></section><section class="fx"><h2>Mix de efeitos</h2><div class="faders" id="fx"></div></section></div>
 <div class="pg" id="p2"><section class="sq" id="sq"></section></div>
 <div class="pg" id="p3"><div class="sp" id="sp"></div><details class="cal"><summary>Calibrar o tamanho real</summary><p>Encoste um cartão de crédito na tela e ajuste até o retângulo ficar do mesmo tamanho (85,6 × 54 mm).</p><div class="calrow"><div id="card"></div><input type="range" id="cs" min="2" max="8" step=".01" value="3.78" aria-label="Escala"><output id="calv"></output></div></details><div class="apcwrap" id="aw"><div class="apc" id="apc"><div id="keys"></div></div></div><p class="cap">APC Key 25 mk II em tamanho real (315 × 193 mm). Desenho aproximado do painel; as 25 teclas são as mesmas do seu controlador.</p></div>
+<div class="pg" id="p4"><section class="sq" id="lp"></section></div>
 </main>
 <script>
 const PD=o=>({inst:'synth',wave:'sawtooth',sub:30,det:8,lwave:'sine',lrate:3,ldepth:0,ldest:'f',oct:0,ftype:'lowpass',cut:2400,res:2,a:.01,d:.3,s:.6,r:.5,...o});
 const PA=[PD({sub:60,cut:600,res:4,a:.005,d:.25,s:.4,r:.2,oct:-1}),PD({wave:'triangle',det:14,cut:1800,a:.3,d:.5,s:.7,r:1.2,lrate:.4,ldepth:30}),PD({wave:'square',det:6,sub:10,cut:3500,res:3,d:.2,s:.5,r:.3,ldest:'p',lrate:5,ldepth:8}),PD({ftype:'bandpass',cut:1200,res:6,sub:0,a:.003,d:.15,s:0,r:.15}),PD({wave:'sine',sub:0,det:20,ftype:'highpass',cut:400,d:.6,s:.2,r:1.5,oct:1}),PD({}),PD({}),PD({})];
 const PRE={piano:{ftype:'lowpass',a:.005,d:.3,s:.6,r:.7,cut:9000,res:.7,sub:0,det:0,ldepth:0},flute:{ftype:'lowpass',a:.07,d:.1,s:.85,r:.2,cut:8000,res:.7,sub:0,det:0,ldepth:0}};
-Object.assign(PA[1],{inst:'piano'},PRE.piano);Object.assign(PA[4],{inst:'flute',oct:1},PRE.flute);
+
 let P=PA[0],sel=0;const M={vol:70},UI={};
 const FD={reverb:30,delay:20,chorus:0,flanger:0,dist:0,phaser:0,crush:0,eq:50,pan:50},RV=[30,50,25,15,40,10,20,15],DL=[10,25,30,20,35,0,0,0];
 const FXS=RV.map((r,i)=>({...FD,reverb:r,delay:DL[i]}));let F=FXS[0];const FU={};
@@ -172,7 +180,6 @@ PA.forEach((p,i)=>{const c=A.tr[i],d=p.ldepth/100,x=T[i].fx;c.filter.type=p.ftyp
 c.gF.gain.value=p.ldest=='f'?d*2400:0;c.gP.gain.value=p.ldest=='p'?d*100:0;c.gV.gain.value=p.ldest=='a'?d*.5:0;c.tb.gain.setTargetAtTime(T[i].mute?0:T[i].vol/100,t,.02);
 for(const n in c.fx)c.fx[n].set(x[n]);c.low.gain.value=-(x.eq-50)/50*10;c.high.gain.value=(x.eq-50)/50*12;c.pan.pan.value=(x.pan-50)/50;c.sR.gain.value=x.reverb/100;c.sD.gain.value=x.delay/100});
 A.master.gain.value=.9}
-function instSet(){sound(sel,P.inst)}
 function sound(i,v){const k=T[i],p=PA[i];if(+v>0)k.dr=+v;else{k.dr=0;p.inst=v;if(PRE[v])Object.assign(p,PRE[v])}
 const r=rows[i];if(r){r.querySelector('.d').value=k.dr?String(k.dr):p.inst;r.querySelector('.dt').hidden=!k.dr}k.show&&k.show();apply();if(sel==i)pick(i);blip(i,pen)}
 function voice(midi,t,i){const p=PA[i],c=A.tr[i],f=440*2**((midi-69)/12),env=ctx.createGain(),o=[],gs=[],v={env,o,gs,p,c};
@@ -191,9 +198,9 @@ c.act.push(v);if(c.act.length>10)release(c.act.shift(),ctx.currentTime,1);return
 function release(v,t,fast){const g=v.env.gain,r=v.p.r,e=t+(fast?.12:r*1.2+.05);
 g.cancelAndHoldAtTime?g.cancelAndHoldAtTime(t):g.cancelScheduledValues(t);g.setTargetAtTime(0,t,fast?.01:r/5);v.o.forEach(x=>x.stop(e))}
 const lt=()=>SPL.live<0?sel:SPL.live;
-function liveOn(m){const i=lt(),k=T[i];k.live=performance.now()+1500;k.pulse=1;if(k.dr){drum(k.dr,ctx.currentTime,i,k.tune);return null}return voice(m+PA[i].oct*12,ctx.currentTime,i)}
+function liveOn(m){const i=lt(),k=T[i];k.live=performance.now()+1500;k.pulse=1;recOn(m,i);if(k.dr){drum(k.dr,ctx.currentTime,i,k.tune);return null}return voice(m+PA[i].oct*12,ctx.currentTime,i)}
 function noteOn(n){initAudio();if(SPL.on&&n<SPL.at)return arr(n);if(voices[n])noteOff(n);pen=n;$('#pen').textContent=NAMES[n%12];setKey(n,1);const v=liveOn(48+n);if(v)voices[n]=v;else setTimeout(()=>setKey(n,0),90)}
-function noteOff(n){const v=voices[n];if(!v)return;delete voices[n];setKey(n,0);release(v,ctx.currentTime)}
+function noteOff(n){recOff(48+n);const v=voices[n];if(!v)return;delete voices[n];setKey(n,0);release(v,ctx.currentTime)}
 /* ---------- controles ---------- */
 const hz=v=>v>=1000?(v/1000).toFixed(1)+'k':Math.round(v),sec=v=>v.toFixed(2)+'s';
 function knob(key,label,min,max,def,o={}){const exp=o.exp,fmt=o.fmt||(v=>Math.round(v));
@@ -218,7 +225,7 @@ b.onclick=()=>{P[key]=v;[...el.children].forEach(c=>c.classList.toggle('on',c===
 function mod(title,...kids){const m=document.createElement('div');m.className='mod';m.innerHTML=`<h3>${title}</h3>`;const r=document.createElement('div');r.className='row';r.append(...kids);m.append(r);return m}
 const W=[['sine','','Senoidal'],['square','','Quadrada'],['sawtooth','','Dente de serra'],['triangle','','Triangular']];
 $('#cl').append(
- mod('Oscilador',group('inst',[['synth','Synth'],['piano','Piano'],['flute','Flauta']],instSet),group('wave',W,()=>blip(sel,pen)),knob('sub','Sub',0,100,30),knob('det','Desafinar',0,40,8,{fmt:v=>Math.round(v)+'¢'})),
+ mod('Oscilador',group('wave',W,()=>blip(sel,pen)),knob('sub','Sub',0,100,30),knob('det','Desafinar',0,40,8,{fmt:v=>Math.round(v)+'¢'})),
  mod('LFO',group('lwave',W),group('ldest',[['f','Filtro'],['p','Tom'],['a','Volume']]),knob('lrate','Taxa',.1,20,3,{exp:1,fmt:v=>v.toFixed(1)+'Hz'}),knob('ldepth','Profund.',0,100,0)),
  mod('Oitava',group('oct',[[-1,'Grave'],[0,'Médio'],[1,'Agudo']]))
 );
@@ -278,8 +285,8 @@ const T=COL.map((c,i)=>({c,steps:[],len:LEN[i],vol:80,mute:0,dr:DRI[i],tune:0,ar
 let pen=0,bpm=110,playing=0,nxt=0,step=0,timer,ev=[];const cells=[],rows=[];
 const sq=$('#sq');
 sq.innerHTML=`<div class="sh"><h2>Sequenciador</h2><button class="pp">▶ Tocar</button><label>BPM <input type="range" id="bpm" min="60" max="200" value="110"> <output id="bv">110</output></label><span>Nota do lápis: <b id="pen">C</b> (toque uma tecla para mudar). Clique num passo para ligar ou desligar; a roda do mouse muda a nota.</span></div>`;
-$('#bpm').oninput=e=>{bpm=+e.target.value;$('#bv').textContent=bpm};
-const blip=(i,n)=>{initAudio();const t=ctx.currentTime;if(T[i].dr)return drum(T[i].dr,t,i,T[i].tune);const v=voice(48+PA[i].oct*12+n,t,i);release(v,t+.18)};
+$('#bpm').oninput=e=>{bpm=+e.target.value;$('#bv').textContent=bpm;$('#lbpm').value=bpm;$('#lbv').textContent=bpm};
+const blip=(i,n)=>{initAudio();T[i].live=performance.now()+1500;T[i].pulse=1;const t=ctx.currentTime;if(T[i].dr)return drum(T[i].dr,t,i,T[i].tune);const v=voice(48+PA[i].oct*12+n,t,i);release(v,t+.18)};
 T.forEach((k,i)=>{const r=document.createElement('div');r.className='tr';r.style.setProperty('--c',k.c);
 r.innerHTML=`<div class="tc"><b>Faixa ${i+1}</b><button class="m" title="Silenciar">M</button><button class="ar on" title="Segue o arranjador: é transposta pela mão esquerda do split">A</button><input type="range" min="0" max="100" value="80" title="Volume da faixa" aria-label="Volume faixa ${i+1}"><select class="d" title="Som da faixa: sintetizador, piano, flauta ou bateria">${SN.map(([v,n])=>`<option value="${v}"${v==(k.dr?String(k.dr):PA[i].inst)?' selected':''}>${n}</option>`).join('')}</select><input type="range" class="dt" min="-12" max="12" value="0" title="Afinação da bateria" aria-label="Afinação faixa ${i+1}"><select class="l" title="Passos da faixa (ritmos diferentes entre faixas)">${[4,6,8,10,12,16].map(n=>`<option${n==k.len?' selected':''}>${n}</option>`).join('')}</select><button class="r" title="Padrão aleatório">🎲</button><button class="x" title="Limpar">✕</button></div><div class="ss"></div>`;
 const q=x=>r.querySelector(x),cs=cells[i]=[];
@@ -293,7 +300,7 @@ q('.ar').onclick=e=>{k.arr^=1;e.target.classList.toggle('on',k.arr)};q('.m').onc
 q('input').oninput=e=>{k.vol=+e.target.value;apply();if(sel==i)UI.vol(k.vol)};
 q('.l').onchange=e=>{k.len=+e.target.value;show()};
 q('.d').onchange=e=>sound(i,e.target.value);q('.dt').oninput=e=>k.tune=+e.target.value;q('.dt').hidden=!k.dr;q('.r').onclick=rnd;q('.x').onclick=()=>{k.steps.fill(-1);show()};q('b').onclick=()=>pick(i);rnd();if(k.dr)k.steps=k.steps.map((_,j)=>[j%4==0,j%8==4,j%2==0][k.dr-1]?0:-1);show();sq.append(r);rows.push(r)});
-function pick(i){sel=i;P=PA[i];F=T[i].fx;for(const k in FU)FU[k](F[k]);UI.vol(T[i].vol);$('.fx h2').textContent='Efeitos da faixa '+(i+1);for(const k in UI)if(P[k]!==undefined)UI[k](P[k]);
+function pick(i){sel=i;P=PA[i];F=T[i].fx;for(const k in FU)FU[k](F[k]);UI.vol(T[i].vol);$('.fx h2').textContent='Efeitos da faixa '+(i+1);{const om=$('#cl .mod'),sy=!T[i].dr&&PA[i].inst=='synth';om.classList.toggle('dis',!sy);om.querySelector('h3').textContent=sy?'Oscilador':'Oscilador (inativo: esta faixa não usa Synth)'}for(const k in UI)if(P[k]!==undefined)UI[k](P[k]);
 document.querySelectorAll('#sel button').forEach((b,j)=>b.classList.toggle('on',j==i));rows.forEach((r,j)=>r.classList.toggle('sel',j==i));
 $('.top').style.setProperty('--blue',COL[i])}
 $('#sel').innerHTML='<span>Editando som e efeitos da faixa (o teclado toca essa faixa):</span>'+COL.map((c,i)=>`<button style="--c:${c}">Faixa ${i+1}</button>`).join('');
@@ -315,7 +322,7 @@ const nm=i=>(i+1)+' '+(T[i].dr?DR[T[i].dr]:{synth:'Synth',piano:'Piano',flute:'F
 const YAW=.62,PIT=.62,CAMD=7,cya=Math.cos(YAW),sya=Math.sin(YAW),cp=Math.cos(PIT),sp=Math.sin(PIT);
 let lastT=0;const vis={p1:1};
 function updPads(){if(!vis.p3)return;pads.forEach((col,c)=>col.forEach((p,r)=>{const v=T[c].pulse>(4-r)/5?1:.14;if(p._l!==v){p._l=v;p.style.setProperty('--l',v)}}))}
-function draw(t){requestAnimationFrame(draw);if(t-lastT<30)return;lastT=t;const w=cv.width,h=cv.height,s=t/1000,dp=Math.min(devicePixelRatio||1,1.5),S=Math.min(w/4.2,h*.42);
+function draw(t){requestAnimationFrame(draw);if(t-lastT<30)return;lastT=t;if(vis.p4)lpPaint();const w=cv.width,h=cv.height,s=t/1000,dp=Math.min(devicePixelRatio||1,1.5),S=Math.min(w/4.2,h*.42);
 g.fillStyle='rgba(4,5,14,.3)';g.fillRect(0,0,w,h);g.shadowBlur=0;g.globalAlpha=1;
 let rms=0;if(A.an){A.an.getByteTimeDomainData(A.td);let q=0;for(let i=0;i<1024;i++){const v=(A.td[i]-128)/128;q+=v*v}rms=Math.sqrt(q/1024)}
 segs.forEach((e,i)=>e.classList.toggle('on',i<Math.round(Math.min(1,rms*3.2)*8)));
@@ -325,8 +332,8 @@ gl.addColorStop(0,'#fff0a8');gl.addColorStop(.4,'rgba(255,150,60,.55)');gl.addCo
 g.fillStyle=gl;g.beginPath();g.arc(w/2,h*.3,r*2.4,0,TAU);g.fill();
 const pj=(x,y,z)=>{const X=x*cya+z*sya,Z=-x*sya+z*cya,Y=y*cp+Z*sp,D=Z*cp-y*sp,d=CAMD/(CAMD+D);return[w/2+X*d*S,h*.52-Y*d*S,d]};
 g.font=`${12*dp}px 'Exo 2',sans-serif`;g.textAlign='right';
-for(let i=T.length-1;i>=0;i--){const k=T[i],al=!k.mute&&((playing&&k.steps.some((n,j)=>j<k.len&&n>=0))||k.live>performance.now()),z=(i-3.5)*.3+(al?Math.sin(s*.5+i*1.7)*.05:0),mu=k.mute?.25:1,amp=(.08+k.pulse*.14)*mu,beh=WF[k.dr?'noise':PA[i].inst=='synth'?PA[i].wave:PA[i].inst];
-const yAt=u=>{let y=beh(u,s*(.7+i*.3))*amp;for(let j=0;j<k.len;j++){const n=k.steps[j];if(n>=0){const d=(u-(j+.5)/k.len)*k.len;y+=(.1+n/15*.38)*(j==k.pos?1+k.pulse*.7:1)*Math.exp(-d*d*7)*mu}}return y};
+for(let i=T.length-1;i>=0;i--){const k=T[i],al=!k.mute&&((playing&&k.steps.some((n,j)=>j<k.len&&n>=0))||k.live>performance.now()),z=(i-3.5)*.3+(al?Math.sin(s*.5+i*1.7)*.05:0),mu=k.mute?.25:1,amp=(.17+k.pulse*.1)*mu,beh=WF[k.dr?'noise':PA[i].inst=='synth'?PA[i].wave:PA[i].inst];
+const yAt=u=>{let y=beh(u,s*(.7+i*.3))*amp;for(let j=0;j<k.len;j++){const n=k.steps[j];if(n>=0){const d=(u-(j+.5)/k.len)*k.len;y+=(.05+n/24*.22)*(j==k.pos?1+k.pulse*.7:1)*Math.exp(-d*d*7)*mu}}return y};
 g.globalAlpha=al?.2:.5;g.strokeStyle=k.c;g.lineWidth=(al?1:1.6)*dp;g.beginPath();let a=pj(-1.25,0,z),b=pj(1.25,0,z);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();if(!al){g.globalAlpha=.9;g.fillStyle=k.c;const l=pj(-1.38,0,z);g.fillText(nm(i),l[0],l[1]);k.pulse=0;continue}
 g.globalAlpha=.95*mu;g.lineWidth=(2+k.pulse*2.5)*dp;g.beginPath();
 for(let n=0;n<=110;n++){const u=n/110,p=pj((u-.5)*2.5,yAt(u),z);n?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])}g.save();g.globalAlpha=.18*mu;g.lineWidth*=3.5;g.stroke();g.restore();g.stroke();
@@ -336,7 +343,7 @@ requestAnimationFrame(draw);
 /* MIDI (APC Key 25 e outros controladores) */
 const mv={},kn=m=>{let n=m-48;while(n<0)n+=12;while(n>24)n-=12;return n};
 function midiOn(m){initAudio();const n=kn(m);if(SPL.on&&n<SPL.at)return arr(n);if(mv[m])midiOff(m);pen=n;$('#pen').textContent=NAMES[n%12];setKey(n,1);const v=liveOn(m);if(v)mv[m]=v}
-function midiOff(m){setKey(kn(m),0);const v=mv[m];if(!v)return;delete mv[m];release(v,ctx.currentTime)}
+function midiOff(m){recOff(m);setKey(kn(m),0);const v=mv[m];if(!v)return;delete mv[m];release(v,ctx.currentTime)}
 $('#sel').insertAdjacentHTML('beforeend','<span id="midi" style="margin-left:auto"></span>');
 const ms=t=>$('#midi').textContent='MIDI: '+t;
 if(!navigator.requestMIDIAccess)ms('este navegador não suporta (use Chrome, Edge ou Opera)');
@@ -348,7 +355,7 @@ acc.onstatechange=bind;bind()},()=>ms('acesso negado ou bloqueado pelo ambiente'
 document.querySelectorAll('#nav button[data-p]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.p).scrollIntoView({behavior:'smooth'}));
 $('#fsa').onclick=()=>{const d=document.documentElement;document.fullscreenElement?document.exitFullscreen():d.requestFullscreen&&d.requestFullscreen()};
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&document.querySelectorAll('#nav button[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p==e.target.id))),{rootMargin:'-45% 0px -45% 0px'});
-['p1','p2','p3'].forEach(id=>io.observe(document.getElementById(id)));
+['p1','p2','p3','p4'].forEach(id=>io.observe(document.getElementById(id)));
 /* APC Key 25 mk II em tamanho real: 315 x 193 mm */
 const apc=$('#apc'),pads=[];
 const mk=(cls,st,h)=>{const d=document.createElement('div');d.className=cls;d.style.cssText=st;if(h)d.innerHTML=h;apc.prepend(d);return d};
@@ -362,7 +369,63 @@ function setMM(v){$('#p3').style.setProperty('--mm',v+'px');$('#calv').textConte
 let mm0=3.78;try{mm0=+localStorage.getItem('apcmm')||3.78}catch(e){}
 $('#cs').value=mm0;setMM(mm0);
 $('#cs').oninput=e=>{const v=+e.target.value;setMM(v);try{localStorage.setItem('apcmm',v)}catch(_){}};
-const vo=new IntersectionObserver(es=>es.forEach(e=>vis[e.target.id]=e.isIntersecting));['p1','p3'].forEach(id=>vo.observe(document.getElementById(id)));
+const vo=new IntersectionObserver(es=>es.forEach(e=>vis[e.target.id]=e.isIntersecting));['p1','p3','p4'].forEach(id=>vo.observe(document.getElementById(id)));
+/* loop em camadas (até 10) */
+const LP={layers:[],bars:1,met:1,cin:1,running:0,rec:null,t0:0,pt:0,bt0:0,cn:0,L:2,timer:0};
+const lp=$('#lp');
+lp.classList.add('lp');
+lp.innerHTML=`<div class="sh"><h2>Loop em camadas</h2><button id="lrec">● Gravar</button><button id="lstop">▶ Tocar loop</button><button id="lundo">↶ Desfazer camada</button><button id="lclr">Limpar tudo</button></div>
+<div class="sh"><label>Compasso <select id="lbar"><option value="1">1 compasso</option><option value="2">2 compassos</option><option value="4">4 compassos</option></select></label><label>BPM <input type="range" id="lbpm" min="60" max="200" value="${bpm}"><output id="lbv">${bpm}</output></label><label><input type="checkbox" id="lmet" checked> Metrônomo</label><label><input type="checkbox" id="lcin" checked> Contagem de 4 tempos</label><span id="lps"></span></div>
+<div class="lpg"><div id="lpl"></div><canvas id="lpc"></canvas></div>
+<div class="sh"><span>Toque no teclado do computador, no APC ou no teclado da tela. A gravação usa a faixa selecionada no momento de cada nota. O BPM e o compasso ficam travados enquanto houver camadas.</span></div>`;
+const lpl=$('#lpl'),lpc=$('#lpc'),lg=lpc.getContext('2d');
+for(let j=0;j<10;j++){const d=document.createElement('div');d.innerHTML=`<b>${j+1}</b><span></span><button class="lm" title="Silenciar camada">M</button><button class="lx" title="Apagar camada">✕</button>`;
+d.querySelector('.lm').onclick=()=>{const l=LP.layers[j];if(l){l.mute^=1;lpUI()}};
+d.querySelector('.lx').onclick=()=>{if(LP.layers[j]){LP.layers.splice(j,1);lpAfter()}};lpl.append(d)}
+function lpUI(){const n=LP.layers.length;
+[...lpl.children].forEach((d,j)=>{const l=LP.layers[j],m=d.querySelector('.lm'),x=d.querySelector('.lx');d.querySelector('span').textContent=l?l.ev.length+' notas':'vazia';d.classList.toggle('mu',!!(l&&l.mute));m.disabled=x.disabled=!l;m.classList.toggle('on',!!(l&&l.mute))});
+$('#lrec').textContent=LP.rec?'✕ Cancelar gravação':LP.running?'● Camada '+(n+1):'● Gravar';$('#lrec').disabled=!LP.rec&&n>=10;
+$('#lstop').textContent=LP.running?'■ Parar loop':'▶ Tocar loop';$('#lstop').disabled=!n&&!LP.running;$('#lundo').disabled=!n;$('#lclr').disabled=!n&&!LP.rec;
+$('#lbar').disabled=$('#lbpm').disabled=$('#bpm').disabled=n>0||!!LP.running||!!LP.rec}
+function lpStop(){LP.running=0;LP.rec=null;clearInterval(LP.timer)}
+function lpAfter(){if(!LP.layers.length&&!LP.rec)lpStop();lpUI()}
+function lpRun(){clearInterval(LP.timer);LP.timer=setInterval(lpTick,25)}
+function click(t,acc){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=acc?1500:1000;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g);g.connect(A.mix);o.onended=()=>g.disconnect();o.start(t);o.stop(t+.06)}
+function lpPlay(e,t){const k=T[e.i];if(k.dr)drum(k.dr,t,e.i,k.tune);else{const v=voice(e.m+PA[e.i].oct*12,t,e.i);release(v,t+e.d)}}
+function recOn(m,i){const r=LP.rec;if(!r||!ctx)return;const t=ctx.currentTime-r.ws;if(t<0||t>=LP.L)return;const e={t,d:null,m,i};r.ev.push(e);r.open[m]=e}
+function recOff(m){const r=LP.rec,e=r&&r.open[m];if(e){delete r.open[m];e.d=ctx.currentTime-r.ws-e.t}}
+function lpFinish(){const r=LP.rec,L=LP.L;LP.rec=null;r.ev.forEach(e=>{if(e.d==null)e.d=L-e.t;e.d=Math.max(.06,Math.min(e.d,L-e.t))});
+if(r.ev.length){const l={ev:r.ev,mute:0,from:r.c+1},now=ctx.currentTime;LP.layers.push(l);l.ev.forEach(e=>{const t=r.ws+L+e.t;if(t<=LP.pt&&t>=now-.04)lpPlay(e,Math.max(t,now))})}
+else if(!LP.layers.length)lpStop();lpUI()}
+function lpTick(){if(!LP.running)return;const now=ctx.currentTime,hz=now+.15,L=LP.L,beat=60/bpm;
+if(LP.rec&&now>=LP.rec.ws+L)lpFinish();
+for(let n=Math.max(0,Math.ceil((LP.pt-LP.bt0)/beat));;n++){const t=LP.bt0+n*beat;if(t>hz)break;if(t>LP.pt&&(LP.met||t<LP.t0))click(t,((n-LP.cn)%4+4)%4==0)}
+LP.layers.forEach(l=>{if(l.mute)return;const c0=Math.max(l.from,Math.floor((LP.pt-LP.t0)/L)),c1=Math.floor((hz-LP.t0)/L);for(let c=c0;c<=c1;c++)l.ev.forEach(e=>{const t=LP.t0+c*L+e.t;if(t>LP.pt&&t<=hz)lpPlay(e,t)})});
+LP.pt=hz}
+$('#lrec').onclick=()=>{initAudio();if(LP.rec){LP.rec=null;if(!LP.layers.length)lpStop();lpUI();return}if(LP.layers.length>=10)return;
+const L=LP.L=LP.bars*4*60/bpm,beat=60/bpm;
+if(!LP.running){LP.cn=LP.cin?4:0;LP.bt0=ctx.currentTime+.1;LP.t0=LP.bt0+LP.cn*beat;LP.pt=ctx.currentTime;LP.running=1;LP.rec={c:0,ev:[],open:{},ws:LP.t0};lpRun()}
+else{const c=Math.floor((ctx.currentTime-LP.t0)/L)+1;LP.rec={c,ev:[],open:{},ws:LP.t0+c*L}}
+lpUI()};
+$('#lstop').onclick=()=>{if(LP.running)lpStop();else{initAudio();LP.L=LP.bars*4*60/bpm;LP.cn=0;LP.bt0=LP.t0=ctx.currentTime+.1;LP.pt=ctx.currentTime;LP.layers.forEach(l=>l.from=0);LP.running=1;lpRun()}lpUI()};
+$('#lundo').onclick=()=>{LP.layers.pop();lpAfter()};
+$('#lclr').onclick=()=>{LP.layers=[];lpStop();lpUI()};
+$('#lbar').onchange=e=>LP.bars=+e.target.value;
+$('#lbpm').oninput=e=>{bpm=+e.target.value;$('#lbv').textContent=bpm;$('#bpm').value=bpm;$('#bv').textContent=bpm};
+$('#lmet').onchange=e=>LP.met=+e.target.checked;$('#lcin').onchange=e=>LP.cin=+e.target.checked;
+function lpPaint(){const dp=Math.min(devicePixelRatio||1,1.5),W=Math.round(lpc.clientWidth*dp),H=Math.round(lpc.clientHeight*dp);if(!W)return;if(lpc.width!=W||lpc.height!=H){lpc.width=W;lpc.height=H}
+lg.clearRect(0,0,W,H);const lh=H/10,L=LP.running?LP.L:LP.bars*4*60/bpm,beats=LP.bars*4;
+for(let j=0;j<10;j++){lg.fillStyle=j%2?'#0b0d13':'#090a0f';lg.fillRect(0,j*lh,W,lh)}
+lg.strokeStyle='#2a3042';lg.lineWidth=dp;for(let b=0;b<=beats;b++){lg.globalAlpha=b%4?.4:1;lg.beginPath();lg.moveTo(b/beats*W,0);lg.lineTo(b/beats*W,H);lg.stroke()}
+const d1=(ev,j,al)=>ev.forEach(e=>{lg.globalAlpha=al;lg.fillStyle=COL[e.i];const y=j*lh+lh-5*dp-((e.m-36)%48)/48*(lh-10*dp);lg.fillRect(e.t/L*W,y-2*dp,Math.max(3*dp,(e.d==null?.15:e.d)/L*W),4*dp)});
+LP.layers.forEach((l,j)=>d1(l.ev,j,l.mute?.25:1));
+if(LP.rec){const j=LP.layers.length;lg.globalAlpha=1;lg.fillStyle='rgba(255,60,80,.14)';lg.fillRect(0,j*lh,W,lh);d1(LP.rec.ev,j,1)}
+let st=LP.layers.length?LP.layers.length+' camada(s) em pausa':'Parado';
+if(LP.running){const now=ctx.currentTime;if(now<LP.t0)st='Contagem: '+Math.ceil((LP.t0-now)/(60/bpm));
+else{const c=Math.floor((now-LP.t0)/L);lg.globalAlpha=1;lg.fillStyle='#fff';lg.fillRect(((now-LP.t0)%L)/L*W-dp,0,2*dp,H);
+st=LP.rec?(c<LP.rec.c?'Aguardando o próximo ciclo para gravar a camada '+(LP.layers.length+1):'Gravando a camada '+(LP.layers.length+1)):'Tocando '+LP.layers.length+' camada(s)'}}
+lg.globalAlpha=1;const el=$('#lps');if(el.textContent!=st)el.textContent=st}
+lpUI();
 /* split do teclado */
 const SPL={on:0,at:12,root:0,live:-1};
 $('#sp').innerHTML=`<button id="spb">Split: desligado</button><label>Divisão <select id="sps"><option value="12">Dó4 (esquerda com 12 teclas)</option><option value="7">Sol3 (esquerda com 7)</option><option value="5">Fá3 (esquerda com 5)</option></select></label><label>Mão direita toca <select id="spl"><option value="-1">a faixa selecionada</option>${T.map((_,i)=>`<option value="${i}">Faixa ${i+1}</option>`).join('')}</select></label><span id="rt"></span><span>Esquerda: a tecla define a raiz do arranjador (transpõe as faixas com A ligado). Direita: toca ao vivo, sem transposição. No teclado do computador: Z–M à esquerda, Q–I à direita; A liga o split, L muda a divisão, ← → trocam de faixa.</span>`;
