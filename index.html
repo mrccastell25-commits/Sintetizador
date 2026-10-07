@@ -116,10 +116,10 @@ body{display:block;padding:0}
 .lp button,.lp select{background:#0c0e14;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
 .lp button:disabled{opacity:.35;cursor:default}.lp #lrec{border-color:#ff3c50;color:#fff}.lp button.on{background:#3a1d1d;border-color:#ff5a5a}
 .lp label{display:flex;gap:6px;align-items:center}.lp #lps{margin-left:auto;color:#ff7a1a;font-size:14px}
-.lpg{flex:1;min-height:calc(15*28px);display:grid;grid-template-columns:370px 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lpg{flex:1;min-height:calc(15*28px);display:grid;grid-template-columns:400px 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 #lpl{display:grid;grid-template-rows:repeat(15,minmax(28px,1fr))}#lpl>div{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);font-size:12px;color:var(--dim)}
 #lpl>div.mu{opacity:.5}#lpl b{color:var(--txt);width:16px}#lpl span{flex:1}#lpl button{padding:2px 8px;font-size:12px}
-#p4 .lp{flex:1;display:flex;flex-direction:column}.lpw{position:relative}#lpc{position:absolute;inset:0;width:100%;height:100%}#lpl select{padding:2px 4px;font-size:12px;max-width:140px}
+#p4 .lp{flex:1;display:flex;flex-direction:column}.lpw{position:relative}#lpc{position:absolute;inset:0;width:100%;height:100%}#lpl select{padding:2px 4px;font-size:12px;max-width:165px}
 @media(min-width:821px){#p4{height:calc(100dvh - 52px)}}.mod.dis{opacity:.4}
 #nav .ntp{display:flex;gap:8px;margin-right:14px;padding-right:14px;border-right:1px solid var(--line)}
 #nav .big{display:flex;align-items:center;gap:8px;height:38px;padding:0 18px 0 14px;border-radius:19px;border:0;cursor:pointer;font:600 14px 'Exo 2',system-ui,sans-serif;color:#fff;transition:transform .12s,box-shadow .2s,opacity .2s,filter .2s}
@@ -153,7 +153,7 @@ const PD=o=>({inst:'synth',wave:'sawtooth',sub:30,det:8,lwave:'sine',lrate:3,lde
 const PA=[PD({sub:60,cut:600,res:4,a:.005,d:.25,s:.4,r:.2,oct:-1}),PD({wave:'triangle',det:14,cut:1800,a:.3,d:.5,s:.7,r:1.2,lrate:.4,ldepth:30}),PD({wave:'square',det:6,sub:10,cut:3500,res:3,d:.2,s:.5,r:.3,ldest:'p',lrate:5,ldepth:8}),PD({ftype:'bandpass',cut:1200,res:6,sub:0,a:.003,d:.15,s:0,r:.15}),PD({wave:'sine',sub:0,det:20,ftype:'highpass',cut:400,d:.6,s:.2,r:1.5,oct:1}),PD({}),PD({}),PD({})];
 const PRE={piano:{ftype:'lowpass',a:.005,d:.3,s:.6,r:.7,cut:9000,res:.7,sub:0,det:0,ldepth:0},flute:{ftype:'lowpass',a:.07,d:.1,s:.85,r:.2,cut:8000,res:.7,sub:0,det:0,ldepth:0}};
 
-let P=PA[0],sel=0;const M={vol:70},UI={};
+let P=PA[0],sel=0,LI=null;const M={vol:70},UI={};
 const FD={reverb:30,delay:20,chorus:0,flanger:0,dist:0,phaser:0,crush:0,eq:50,pan:50},RV=[30,50,25,15,40,10,20,15],DL=[10,25,30,20,35,0,0,0];
 const FXS=RV.map((r,i)=>({...FD,reverb:r,delay:DL[i]}));let F=FXS[0];const FU={};
 let ctx,A={};const voices={};
@@ -189,7 +189,7 @@ for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.
 cv.buffer=b;A.rv=ctx.createGain();A.rv.connect(cv);cv.connect(A.mix);
 const dl=ctx.createDelay(2),fb=ctx.createGain(),lp=ctx.createBiquadFilter();dl.delayTime.value=.38;fb.gain.value=.45;lp.frequency.value=3200;
 A.dl=ctx.createGain();A.dl.connect(dl);dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(A.mix);
-A.tr=PA.map(()=>trackChain());
+A.tr=PA.map(()=>trackChain());A.lc=trackChain();{const c=A.lc;for(const n in c.fx)c.fx[n].set(0);c.gF.gain.value=c.gP.gain.value=c.gV.gain.value=0;c.filter.frequency.value=16000;c.filter.Q.value=.3;c.tb.gain.value=.8;c.sR.gain.value=.25;c.sD.gain.value=0}
 apply();$('#hint').style.opacity=0}
 function apply(){if(!ctx)return;const t=ctx.currentTime;
 PA.forEach((p,i)=>{const c=A.tr[i],d=p.ldepth/100,x=T[i].fx;c.filter.type=p.ftype;c.filter.frequency.setTargetAtTime(p.cut,t,.02);c.filter.Q.value=p.res;c.L.type=p.lwave;c.L.frequency.value=p.lrate;
@@ -198,7 +198,7 @@ for(const n in c.fx)c.fx[n].set(x[n]);c.low.gain.value=-(x.eq-50)/50*10;c.high.g
 A.master.gain.value=.9}
 function sound(i,v){const k=T[i],p=PA[i];if(+v>0)k.dr=+v;else{k.dr=0;p.inst=v;if(PRE[v])Object.assign(p,PRE[v])}
 const r=rows[i];if(r){r.querySelector('.d').value=k.dr?String(k.dr):p.inst;r.querySelector('.dt').hidden=!k.dr}k.show&&k.show();apply();if(sel==i)pick(i);blip(i,pen);lpUI()}
-function voice(midi,t,i){const p=PA[i],c=A.tr[i],f=440*2**((midi-69)/12),env=ctx.createGain(),o=[],gs=[],v={env,o,gs,p,c};
+function voice(midi,t,i,pp,cc){const p=pp||PA[i],c=cc||A.tr[i],f=440*2**((midi-69)/12),env=ctx.createGain(),o=[],gs=[],v={env,o,gs,p,c};
 const mk=(type,fr,det,lvl)=>{const x=ctx.createOscillator(),g=ctx.createGain();x.type=type;x.frequency.value=fr;x.detune.value=det;g.gain.value=lvl;x.connect(g);g.connect(env);o.push(x);gs.push(g);if(p.ldest=='p'&&p.ldepth>0)c.gP.connect(x.detune);x.start(t);return g};
 const adsr=()=>{env.gain.setValueAtTime(0,t);env.gain.linearRampToValueAtTime(.3,t+p.a);env.gain.setTargetAtTime(.3*p.s,t+p.a,p.d/3)};
 if(p.inst=='piano'){for(let n=1;n<=6;n++){const a=.6/n**1.1,g=mk('sine',f*n*(1+.0004*n*n),0,a);g.gain.setValueAtTime(a,t);g.gain.exponentialRampToValueAtTime(.001,t+Math.max(.3,3.2/n**.8))}
@@ -214,7 +214,11 @@ c.act.push(v);if(c.act.length>10)release(c.act.shift(),ctx.currentTime,1);return
 function release(v,t,fast){const g=v.env.gain,r=v.p.r,e=t+(fast?.12:r*1.2+.05);
 g.cancelAndHoldAtTime?g.cancelAndHoldAtTime(t):g.cancelScheduledValues(t);g.setTargetAtTime(0,t,fast?.01:r/5);v.o.forEach(x=>x.stop(e))}
 const lt=()=>SPL.live<0?sel:SPL.live;
-function liveOn(m){const i=lt(),k=T[i];k.live=performance.now()+1500;k.pulse=1;recOn(m,i);if(k.dr){drum(k.dr,ctx.currentTime,i,k.tune);return null}return voice(m+PA[i].oct*12,ctx.currentTime,i)}
+function instPlay(key,m,t){const c=key[0];
+if(c=='t'){const i=+key.slice(1),k=T[i];if(k.dr){drum(k.dr,t,i,k.tune);return null}return voice(m+PA[i].oct*12,t,i)}
+if(c=='d'){drum(+key.slice(1),t,0,0,A.lc);return null}
+return voice(m,t,0,LPP[key.slice(2)],A.lc)}
+function liveOn(m){const key=LI||'t'+lt();if(!LI){const k=T[lt()];k.live=performance.now()+1500;k.pulse=1}recOn(m,key);return instPlay(key,m,ctx.currentTime)}
 function noteOn(n){initAudio();if(SPL.on&&n<SPL.at)return arr(n);if(voices[n])noteOff(n);pen=n;$('#pen').textContent=NAMES[n%12];setKey(n,1);const v=liveOn(48+n);if(v)voices[n]=v;else setTimeout(()=>setKey(n,0),90)}
 function noteOff(n){recOff(48+n);const v=voices[n];if(!v)return;delete voices[n];setKey(n,0);release(v,ctx.currentTime)}
 /* ---------- controles ---------- */
@@ -283,7 +287,7 @@ addEventListener('blur',()=>Object.keys(voices).forEach(n=>noteOff(+n)));
 /* bateria */
 const DR=['Synth','Bumbo','Caixa','Hi-hat','Hi-hat aberto','Palma','Tom','Címbalo','Cowbell'];
 const SN=[['synth','Synth'],['piano','Piano'],['flute','Flauta'],...DR.slice(1).map((n,j)=>[String(j+1),n])];
-function drum(id,t,i,tn){const c=A.tr[i],f=2**(tn/12);
+function drum(id,t,i,tn,cc){const c=cc||A.tr[i],f=2**(tn/12);
 const E=(d,l,ts)=>{const g=ctx.createGain();g.gain.setValueAtTime(l*.8,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);g.connect(c.tb);return g};
 const O=(ty,f0,f1,sw,d,l)=>{const o=ctx.createOscillator(),g=E(d,l,t);o.type=ty;o.frequency.setValueAtTime(f0*f,t);o.frequency.exponentialRampToValueAtTime(f1*f,t+sw);o.connect(g);o.onended=()=>g.disconnect();o.start(t);o.stop(t+d+.05)};
 const N=(ty,fr,q,d,l,of=0)=>{const x=ctx.createBufferSource(),b=ctx.createBiquadFilter(),ts=t+of;x.buffer=A.nb;b.type=ty;b.frequency.value=fr*f;b.Q.value=q;const g=E(d,l,ts);x.connect(b);b.connect(g);x.onended=()=>{b.disconnect();g.disconnect()};x.start(ts,Math.random()*.5);x.stop(ts+d+.05)};
@@ -316,7 +320,7 @@ q('.ar').onclick=e=>{k.arr^=1;e.target.classList.toggle('on',k.arr)};q('.m').onc
 q('input').oninput=e=>{k.vol=+e.target.value;apply();if(sel==i)UI.vol(k.vol)};
 q('.l').onchange=e=>{k.len=+e.target.value;show()};
 q('.d').onchange=e=>sound(i,e.target.value);q('.dt').oninput=e=>k.tune=+e.target.value;q('.dt').hidden=!k.dr;q('.r').onclick=rnd;q('.x').onclick=()=>{k.steps.fill(-1);show()};q('b').onclick=()=>pick(i);rnd();if(k.dr)k.steps=k.steps.map((_,j)=>[j%4==0,j%8==4,j%2==0][k.dr-1]?0:-1);show();sq.append(r);rows.push(r)});
-function pick(i){sel=i;P=PA[i];F=T[i].fx;for(const k in FU)FU[k](F[k]);UI.vol(T[i].vol);$('.fx h2').textContent='Efeitos da faixa '+(i+1);{const om=$('#cl .mod'),sy=!T[i].dr&&PA[i].inst=='synth';om.classList.toggle('dis',!sy);om.querySelector('h3').textContent=sy?'Oscilador':'Oscilador (inativo: esta faixa não usa Synth)'}for(const k in UI)if(P[k]!==undefined)UI[k](P[k]);
+function pick(i){LI=null;sel=i;P=PA[i];F=T[i].fx;for(const k in FU)FU[k](F[k]);UI.vol(T[i].vol);$('.fx h2').textContent='Efeitos da faixa '+(i+1);{const om=$('#cl .mod'),sy=!T[i].dr&&PA[i].inst=='synth';om.classList.toggle('dis',!sy);om.querySelector('h3').textContent=sy?'Oscilador':'Oscilador (inativo: esta faixa não usa Synth)'}for(const k in UI)if(P[k]!==undefined)UI[k](P[k]);
 document.querySelectorAll('#sel button').forEach((b,j)=>b.classList.toggle('on',j==i));rows.forEach((r,j)=>r.classList.toggle('sel',j==i));
 $('.top').style.setProperty('--blue',COL[i])}
 $('#sel').innerHTML='<span>Editando som e efeitos da faixa (o teclado toca essa faixa):</span>'+COL.map((c,i)=>`<button style="--c:${c}">Faixa ${i+1}</button>`).join('');
@@ -393,32 +397,38 @@ lp.classList.add('lp');
 lp.innerHTML=`<div class="sh"><h2>Loop em camadas</h2><button id="lstop">▶ Tocar loop</button><button id="lundo">↶ Desfazer camada</button><button id="lclr">Limpar tudo</button></div>
 <div class="sh"><label>Compasso <select id="lbar"><option value="1">1 compasso</option><option value="2">2 compassos</option><option value="4">4 compassos</option></select></label><label>BPM <input type="range" id="lbpm" min="60" max="200" value="${bpm}"><output id="lbv">${bpm}</output></label><label><input type="checkbox" id="lmet" checked> Metrônomo</label><label><input type="checkbox" id="lcin" checked> Contagem de 4 tempos</label><span id="lps"></span></div>
 <div class="lpg"><div id="lpl"></div><div class="lpw"><canvas id="lpc"></canvas></div></div>
-<div class="sh"><span>Toque no teclado do computador, no APC ou no teclado da tela. Cada camada usa o som da faixa escolhida na sua linha (ao gravar, essa faixa é carregada no teclado). A gravação continua a cada volta do compasso, sobrescrevendo a anterior, até você apertar a bolinha vermelha da linha de novo (ou gravar em outra linha). O BPM e o compasso ficam travados enquanto houver camadas.</span></div>`;
+<div class="sh"><span>Toque no teclado do computador, no APC ou no teclado da tela. Cada camada tem o seu instrumento, qualquer um da lista (não só os das faixas do sequenciador). Ao gravar, ele é carregado no teclado. A gravação continua a cada volta do compasso: o que você tocar substitui só a região que tocou, e o resto da camada é mantido, até você apertar a bolinha vermelha da linha de novo (ou gravar em outra linha). O BPM e o compasso ficam travados enquanto houver camadas.</span></div>`;
 const lpl=$('#lpl'),lpc=$('#lpc'),lg=lpc.getContext('2d');
-const SLOT=Array.from({length:NL},(_,j)=>j%8),ly=j=>LP.layers.find(l=>l.row===j);
-for(let j=0;j<NL;j++){const d=document.createElement('div');d.innerHTML=`<b>${j+1}</b><button class="lr" aria-label="Gravar camada ${j+1}"></button><select class="lt" title="Faixa cujo som esta camada usa">${T.map((_,i)=>`<option value="${i}"></option>`).join('')}</select><span></span><button class="lm" title="Silenciar camada">M</button><button class="lx" title="Apagar camada">✕</button>`;
+const DEFI=['p:piano','p:flute','p:saw','p:square','d1','d2','d3','p:tri'],SLOT=Array.from({length:NL},(_,j)=>DEFI[j%8]);
+const LPP={saw:PD({wave:'sawtooth',cut:6000,res:.7,sub:15}),square:PD({wave:'square',cut:5000,res:.7,sub:15}),sine:PD({wave:'sine',cut:16000,res:.5,sub:0}),tri:PD({wave:'triangle',cut:12000,res:.5,sub:0}),piano:PD({inst:'piano',...PRE.piano}),flute:PD({inst:'flute',...PRE.flute})};
+const IOPT='<optgroup label="Faixas do sequenciador">'+T.map((_,i)=>`<option value="t${i}"></option>`).join('')+'</optgroup><optgroup label="Instrumentos livres">'+[['p:saw','Synth serra'],['p:square','Synth quadrada'],['p:sine','Synth senoidal'],['p:tri','Synth triangular'],['p:piano','Piano'],['p:flute','Flauta'],['d1','Bumbo'],['d2','Caixa'],['d3','Hi-hat'],['d4','Hi-hat aberto'],['d5','Palma'],['d6','Tom'],['d7','Címbalo'],['d8','Cowbell']].map(([v,n])=>`<option value="${v}">${n}</option>`).join('')+'</optgroup>';
+const icol=k=>k[0]=='t'?COL[+k.slice(1)]:k=='p:piano'?'#e8ecf5':k=='p:flute'?'#8be0ff':k[0]=='d'?'#ff9f6e':'#ffd166';
+const ly=j=>LP.layers.find(l=>l.row===j);
+for(let j=0;j<NL;j++){const d=document.createElement('div');d.innerHTML=`<b>${j+1}</b><button class="lr" aria-label="Gravar camada ${j+1}"></button><select class="lt" title="Instrumento desta camada: qualquer um da lista, não só os das faixas">${IOPT}</select><span></span><button class="lm" title="Silenciar camada">M</button><button class="lx" title="Apagar camada">✕</button>`;
 d.querySelector('.lr').onclick=()=>lpRecRow(j);
-d.querySelector('.lt').onchange=e=>{const v=+e.target.value,l=ly(j);SLOT[j]=v;if(l)l.track=v;pick(v);lpUI()};
+d.querySelector('.lt').onchange=e=>{const v=e.target.value,l=ly(j);SLOT[j]=v;if(l)l.inst=v;useInst(v);initAudio();const t=ctx.currentTime,pv=instPlay(v,60,t);if(pv)release(pv,t+.25);lpUI()};
 d.querySelector('.lm').onclick=()=>{const l=ly(j);if(l){l.mute^=1;lpUI()}};
 d.querySelector('.lx').onclick=()=>{const l=ly(j);if(l){LP.layers.splice(LP.layers.indexOf(l),1);if(LP.rec&&LP.rec.layer===l)LP.rec.layer=null;lpAfter()}};lpl.append(d)}
 function lpUI(){const n=LP.layers.length;
 [...lpl.children].forEach((d,j)=>{const l=ly(j),m=d.querySelector('.lm'),x=d.querySelector('.lx'),s=d.querySelector('.lt'),r=d.querySelector('.lr'),on=!!(LP.rec&&LP.rec.row===j);
-[...s.options].forEach((o,i)=>o.textContent=nm(i));s.value=l?l.track:SLOT[j];d.querySelector('b').style.color=COL[+s.value];
+[...s.options].forEach(o=>{if(o.value[0]=='t')o.textContent=nm(+o.value.slice(1))});s.value=l?l.inst:SLOT[j];d.querySelector('b').style.color=icol(s.value);
 d.querySelector('span').textContent=l?l.ev.length+' notas':'vazia';d.classList.toggle('mu',!!(l&&l.mute));m.disabled=x.disabled=!l;m.classList.toggle('on',!!(l&&l.mute));
-r.classList.toggle('on',on);r.title=on?'Parar a gravação desta camada':'Gravar esta camada (sobrescreve a cada volta)'});
+r.classList.toggle('on',on);r.title=on?'Parar a gravação desta camada':'Gravar esta camada (o que você tocar substitui só a região tocada)'});
 $('#lstop').textContent=LP.running?'■ Parar loop':'▶ Tocar loop';$('#lstop').disabled=!n&&!LP.running;$('#lundo').disabled=!n;$('#lclr').disabled=!n&&!LP.rec;
 $('#lbar').disabled=$('#lbpm').disabled=$('#bpm').disabled=n>0||!!LP.running||!!LP.rec}
 function lpStop(){LP.running=0;LP.rec=null;clearInterval(LP.timer)}
 function lpAfter(){if(!LP.layers.length&&!LP.rec)lpStop();lpUI()}
 function lpRun(){clearInterval(LP.timer);LP.timer=setInterval(lpTick,25)}
 function click(t,acc){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=acc?1500:1000;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g);g.connect(A.mix);o.onended=()=>g.disconnect();o.start(t);o.stop(t+.06)}
-function lpPlay(e,t,l){const i=l.track,k=T[i];if(k.dr)drum(k.dr,t,i,k.tune);else{const v=voice(e.m+PA[i].oct*12,t,i);release(v,t+e.d)}}
+function lpPlay(e,t,l){const v=instPlay(l.inst,e.m,t);if(v)release(v,t+e.d)}
 function recOn(m,i){const r=LP.rec;if(!r||!ctx)return;const t=ctx.currentTime-r.ws;if(t<0||t>=LP.L)return;const e={t,d:null,m,i};r.ev.push(e);r.open[m]=e}
 function recOff(m){const r=LP.rec,e=r&&r.open[m];if(e){delete r.open[m];e.d=ctx.currentTime-r.ws-e.t}}
+function lpKeep(old,nw){const gap=60/bpm,cl=[];[...nw].sort((a,b)=>a.t-b.t).forEach(e=>{const c=cl[cl.length-1];if(c&&e.t-c.b<=gap)c.b=Math.max(c.b,e.t+e.d);else cl.push({a:e.t,b:e.t+e.d})});
+return old.filter(o=>!cl.some(c=>o.t>=c.a-.06&&o.t<=c.b+.06))}
 function lpCommit(p){const r=LP.rec,L=LP.L;r.ev.forEach(e=>{if(e.d==null)e.d=L-e.t;e.d=Math.max(.06,Math.min(e.d,L-e.t))});r.open={};
 if(r.layer&&!LP.layers.includes(r.layer))r.layer=null;
-if(r.ev.length){if(r.layer)r.layer.ev=r.ev.concat(r.layer.ev.filter(e=>e.t>=p));
-else{const l={ev:r.ev,mute:0,from:r.c+1,track:r.ev[0].i,row:r.row},now=ctx.currentTime;SLOT[r.row]=l.track;LP.layers.push(l);r.layer=l;l.ev.forEach(e=>{const t=r.ws+L+e.t;if(t<=LP.pt&&t>=now-.04)lpPlay(e,Math.max(t,now),l)})}}
+if(r.ev.length){if(r.layer)r.layer.ev=r.ev.concat(lpKeep(r.layer.ev,r.ev));
+else{const l={ev:r.ev,mute:0,from:r.c+1,inst:r.ev[0].i,row:r.row},now=ctx.currentTime;SLOT[r.row]=l.inst;LP.layers.push(l);r.layer=l;l.ev.forEach(e=>{const t=r.ws+L+e.t;if(t<=LP.pt&&t>=now-.04)lpPlay(e,Math.max(t,now),l)})}}
 r.ev=[]}
 function lpPass(){const r=LP.rec;lpCommit(LP.L);r.c++;r.ws+=LP.L;lpUI()}
 function lpStopRec(){const r=LP.rec;if(!r)return;const ph=ctx.currentTime-r.ws;if(ph>0)lpCommit(Math.min(ph,LP.L));LP.rec=null;if(!LP.layers.length)lpStop();lpUI()}
@@ -427,9 +437,10 @@ while(LP.rec&&now>=LP.rec.ws+L)lpPass();
 for(let n=Math.max(0,Math.ceil((LP.pt-LP.bt0)/beat));;n++){const t=LP.bt0+n*beat;if(t>hz)break;if(t>LP.pt&&(LP.met||t<LP.t0))click(t,((n-LP.cn)%4+4)%4==0)}
 LP.layers.forEach(l=>{if(l.mute)return;const c0=Math.max(l.from,Math.floor((LP.pt-LP.t0)/L)),c1=Math.floor((hz-LP.t0)/L);for(let c=c0;c<=c1;c++)l.ev.forEach(e=>{const t=LP.t0+c*L+e.t;if(t>LP.pt&&t<=hz)lpPlay(e,t,l)})});
 LP.pt=hz}
+function useInst(v){if(v[0]=='t')pick(+v.slice(1));else LI=v}
 function lpRecRow(j){initAudio();
 if(LP.rec){const same=LP.rec.row===j;lpStopRec();if(same)return}
-const ex=ly(j);pick(ex?ex.track:SLOT[j]);
+const ex=ly(j);useInst(ex?ex.inst:SLOT[j]);
 const L=LP.L=LP.bars*4*60/bpm,beat=60/bpm;
 if(!LP.running){LP.layers.forEach(l=>l.from=0);LP.cn=LP.cin?4:0;LP.bt0=ctx.currentTime+.1;LP.t0=LP.bt0+LP.cn*beat;LP.pt=ctx.currentTime;LP.running=1;LP.rec={c:0,ev:[],open:{},ws:LP.t0,row:j,layer:ex||null};lpRun()}
 else{const c=Math.floor((ctx.currentTime-LP.t0)/L)+1;LP.rec={c,ev:[],open:{},ws:LP.t0+c*L,row:j,layer:ex||null}}
@@ -444,13 +455,13 @@ function lpPaint(){const dp=Math.min(devicePixelRatio||1,1.5),W=Math.round(lpc.c
 lg.clearRect(0,0,W,H);const lh=H/NL,L=LP.running?LP.L:LP.bars*4*60/bpm,beats=LP.bars*4;
 for(let j=0;j<NL;j++){lg.fillStyle=j%2?'#0b0d13':'#090a0f';lg.fillRect(0,j*lh,W,lh)}
 lg.strokeStyle='#2a3042';lg.lineWidth=dp;for(let b=0;b<=beats;b++){lg.globalAlpha=b%4?.4:1;lg.beginPath();lg.moveTo(b/beats*W,0);lg.lineTo(b/beats*W,H);lg.stroke()}
-const d1=(ev,j,al,tr)=>ev.forEach(e=>{lg.globalAlpha=al;lg.fillStyle=COL[tr>=0?tr:e.i];const y=j*lh+lh-5*dp-((e.m-36)%48)/48*(lh-10*dp);lg.fillRect(e.t/L*W,y-2*dp,Math.max(3*dp,(e.d==null?.15:e.d)/L*W),4*dp)});
-LP.layers.forEach(l=>d1(l.ev,l.row,l.mute?.25:1,l.track));
-if(LP.rec){const j=LP.rec.row;lg.globalAlpha=1;lg.fillStyle='rgba(255,60,80,.14)';lg.fillRect(0,j*lh,W,lh);d1(LP.rec.ev,j,1,-1)}
+const d1=(ev,j,al,tr)=>ev.forEach(e=>{lg.globalAlpha=al;lg.fillStyle=icol(tr||e.i);const y=j*lh+lh-5*dp-((e.m-36)%48)/48*(lh-10*dp);lg.fillRect(e.t/L*W,y-2*dp,Math.max(3*dp,(e.d==null?.15:e.d)/L*W),4*dp)});
+LP.layers.forEach(l=>d1(l.ev,l.row,l.mute?.25:1,l.inst));
+if(LP.rec){const j=LP.rec.row;lg.globalAlpha=1;lg.fillStyle='rgba(255,60,80,.14)';lg.fillRect(0,j*lh,W,lh);d1(LP.rec.ev,j,1,0)}
 let st=LP.layers.length?LP.layers.length+' camada(s) em pausa':'Parado';
 if(LP.running){const now=ctx.currentTime;if(now<LP.t0)st='Contagem: '+Math.ceil((LP.t0-now)/(60/bpm));
 else{const c=Math.floor((now-LP.t0)/L);lg.globalAlpha=1;lg.fillStyle='#fff';lg.fillRect(((now-LP.t0)%L)/L*W-dp,0,2*dp,H);
-st=LP.rec?(c<LP.rec.c?'Aguardando o próximo ciclo para gravar a camada '+(LP.rec.row+1):'Gravando a camada '+(LP.rec.row+1)+': a cada volta do compasso a gravação anterior é sobrescrita, até você parar'):'Tocando '+LP.layers.length+' camada(s)'}}
+st=LP.rec?(c<LP.rec.c?'Aguardando o próximo ciclo para gravar a camada '+(LP.rec.row+1):'Gravando a camada '+(LP.rec.row+1)+': a cada volta, só a região que você tocar é sobrescrita, até você parar'):'Tocando '+LP.layers.length+' camada(s)'}}
 lg.globalAlpha=1;const el=$('#lps');if(el.textContent!=st)el.textContent=st}
 lpUI();
 /* split do teclado */
